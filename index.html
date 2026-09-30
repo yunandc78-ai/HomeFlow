@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="sage-warm">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>HomeFlow - Aplikasi Manajemen Rumah Tangga, Keuangan & Sembako</title>
+  <meta name="description" content="Aplikasi mobile-first manajemen rumah tangga, pembagian gaji otomatis, inventaris sembako dapur, checklist belanja auto-sync, dan meal planner.">
+  
+  <!-- Modern Typography (Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="viewport-wrapper is-frame-mode" id="viewportWrapper">
+    <!-- Desktop Auxiliary Control Bar -->
+    <header class="desktop-control-bar">
+      <div class="brand-badge" id="desktopBrandBadge" onclick="app.openLogoCustomizerModal()" style="cursor: pointer;" title="Klik untuk ganti logo & nama aplikasi (Admin)">
+        <div id="desktopLogoIconContainer" style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--primary-soft); font-size: 16px; overflow: hidden;">
+          <span id="desktopLogoIcon">🏡</span>
+        </div>
+        <span id="desktopAppName">HomeFlow</span>
+        <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: var(--primary-soft); color: var(--primary); margin-left: 6px;">Ganti Logo</span>
+      </div>
+
+      <div class="control-bar-actions">
+        <button class="btn-toggle-view" id="btnToggleViewMode" onclick="app.toggleViewMode()" title="Ganti mode bingkai iPhone atau layar penuh desktop">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Tampilan Layar Penuh
+        </button>
+
+        <button class="btn-theme-toggle" onclick="app.toggleTheme()" title="Ganti Mode Terang / Gelap Sage">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          Tema
+        </button>
+
+        <button class="btn-secondary" style="font-size: 11px; padding: 5px 10px;" onclick="window.homeStore.exportData()" title="Cadangkan Data ke File JSON">
+          Ekspor Data
+        </button>
+
+        <button class="btn-secondary" style="font-size: 11px; padding: 5px 10px; color: var(--accent-terracotta);" onclick="if(confirm('Kembalikan ke data demo awal?')) { window.homeStore.reset(); location.reload(); }" title="Reset ke seed data awal">
+          Reset Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Mobile Application Frame -->
+    <main class="app-container" id="appContainer">
+      <!-- Simulated Phone Status Bar (Island) -->
+      <div class="phone-island-bar">
+        <span>09:41</span>
+        <div class="dynamic-island"></div>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="6" width="18" height="12" rx="2"/><line x1="22" y1="10" x2="22" y2="14" stroke="currentColor" stroke-width="2"/></svg>
+        </div>
+      </div>
+
+      <!-- App Header -->
+      <header class="app-header">
+        <div class="header-user-info">
+          <button class="user-avatar-btn" id="headerAvatarBtn" onclick="app.openLogoCustomizerModal()" title="Klik untuk ganti logo / profil keluarga (Admin)">
+            <span id="headerAvatarContent">🏡</span>
+            <span class="user-avatar-badge"></span>
+          </button>
+          <div>
+            <h1 class="header-greeting-title" id="headerGreetingTitle">Halo, Keluarga 👋</h1>
+            <span class="header-sub">Periode <strong id="headerMonthLabel">September 2026</strong></span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" onclick="app.switchTab('roadmap')" title="Roadmap V2 & V3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span class="badge-dot"></span>
+          </button>
+
+          <button class="icon-btn" onclick="app.openModal('modalSalaryAllocator')" title="Smart Salary Allocator">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- App Scrollable Content Area -->
+      <section class="app-content" id="appContent">
+        <!-- Rendered dynamically by js/app.js -->
+      </section>
+
+      <!-- Bottom Navigation Bar (Mobile Native Style) -->
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-item" data-tab="finance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span>Kas & Gaji</span>
+        </button>
+
+        <button class="nav-item" data-tab="savings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+            <path d="M12 18V6"></path>
+          </svg>
+          <span>Tabungan</span>
+        </button>
+
+        <button class="nav-item" data-tab="inventory">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span>Dapur</span>
+        </button>
+
+        <button class="nav-item" data-tab="shopping">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>Belanja</span>
+        </button>
+
+        <button class="nav-item" data-tab="planner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Planner</span>
+        </button>
+      </nav>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- =====================================================================
+         MODAL: Ganti Logo & Profil Keluarga (Admin)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalCustomLogo">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">⚙️ Ganti Logo & Profil</h3>
+            <span style="font-size: 12px; color: var(--text-secondary);">Kustomisasi Logo Kiri Atas & Nama Identitas (Admin)</span>
+          </div>
+          <button class="modal-close-btn" onclick="app.closeModal('modalCustomLogo')">✕</button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div class="logo-preview-box" id="modalLogoPreview">
+            <span>🏡</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-main);" id="modalLogoPreviewLabel">Preview Logo Aktif</div>
+        </div>
+
+        <!-- Section 1: Preset Ikon / Emoji Estetik -->
+        <label class="form-label">1. Pilih Ikon / Emoji Estetik Cepat</label>
+        <div class="logo-picker-grid" id="presetLogoGrid">
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🏡')">🏡</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🌿')">🌿</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🪴')">🪴</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🌾')">🌾</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🏰')">🏰</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('👨‍👩‍👧‍👦')">👨‍👩‍👧‍👦</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('☕')">☕</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('💎')">💎</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🌟')">🌟</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🏠')">🏠</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🌻')">🌻</button>
+          <button type="button" class="logo-picker-btn" onclick="app.selectPresetLogo('🍀')">🍀</button>
+        </div>
+
+        <!-- Section 2: Upload Gambar Sendiri -->
+        <div class="form-group">
+          <label class="form-label">2. Atau Upload File Gambar / Foto Sendiri</label>
+          <input type="file" id="logoFileInput" accept="image/*" class="form-input" style="padding: 8px;" onchange="app.handleLogoFileUpload(event)">
+        </div>
+
+        <!-- Section 3: Inisial Teks Kustom -->
+        <div class="form-group">
+          <label class="form-label">3. Atau Gunakan Inisial Huruf (Maks 3 Huruf)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="logoInitialsInput" maxlength="3" class="form-input" placeholder="Contoh: KR / HF / RH" style="text-transform: uppercase;">
+            <button type="button" class="btn-secondary" onclick="app.selectInitialsLogo()">Terapkan Inisial</button>
+          </div>
+        </div>
+
+        <!-- Section 4: Nama Keluarga & Brand App -->
+        <div class="form-group">
+          <label class="form-label">Nama Keluarga / Kepala Keluarga</label>
+          <input type="text" id="inputFamilyName" class="form-input" placeholder="Keluarga Raharja">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nama Aplikasi</label>
+          <input type="text" id="inputAppName" class="form-input" placeholder="HomeFlow">
+        </div>
+
+        <button type="button" class="btn-secondary" style="width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="app.closeModal('modalCustomLogo'); app.openModal('modalChangePassword');">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Ganti Password Admin
+        </button>
+
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <button type="button" class="btn-primary" style="flex: 2;" onclick="app.saveBrandingSettings()">
+            Simpan Logo & Pengaturan
+          </button>
+          <button type="button" class="btn-secondary" style="flex: 1; color: var(--accent-terracotta);" onclick="app.closeModal('modalCustomLogo'); app.logout();">
+            Keluar Akun
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: Ganti Password Admin
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalChangePassword">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">🔒 Ganti Password Admin</h3>
+            <span style="font-size: 12px; color: var(--text-secondary);">Perbarui kata sandi akun admin dari password default</span>
+          </div>
+          <button class="modal-close-btn" onclick="app.closeModal('modalChangePassword')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault(); app.handleAdminChangePassword();">
+          <div class="form-group">
+            <label class="form-label">Password Lama Saat Ini</label>
+            <input type="password" class="form-input" id="oldAdminPass" placeholder="Masukkan password lama (default: 123)" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password Baru</label>
+            <input type="password" class="form-input" id="newAdminPass" placeholder="Minimal 3 karakter" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Konfirmasi Password Baru</label>
+            <input type="password" class="form-input" id="confirmAdminPass" placeholder="Ulangi password baru" required>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 18px;">
+            <button type="button" class="btn-secondary" style="flex: 1;" onclick="app.closeModal('modalChangePassword')">
+              Batal
+            </button>
+            <button type="submit" class="btn-primary" style="flex: 2;">
+              Simpan Password Baru
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 1: Smart Salary Allocator (USP)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalSalaryAllocator">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Smart Salary Allocator</h3>
+            <span style="font-size: 12px; color: var(--text-secondary);">Alokasi Gaji Instan ke Dapur, Tabungan & Kas</span>
+          </div>
+          <button class="modal-close-btn" onclick="app.closeModal('modalSalaryAllocator')">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Total Gaji Pokok Masuk Bulan Ini (Rp)</label>
+          <input type="number" id="allocSalaryInput" class="form-input" placeholder="Contoh: 12500000" oninput="app.updateAllocatorBreakdown(this.value)">
+        </div>
+
+        <!-- Quick Presets -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button class="chip-btn" style="flex:1;" onclick="
+            document.getElementById('sliderKitchen').value = 40;
+            document.getElementById('sliderSavings').value = 30;
+            document.getElementById('sliderOperational').value = 20;
+            app.updateAllocatorBreakdown(document.getElementById('allocSalaryInput').value);
+          ">🌿 Mode Seimbang</button>
+
+          <button class="chip-btn" style="flex:1;" onclick="
+            document.getElementById('sliderKitchen').value = 35;
+            document.getElementById('sliderSavings').value = 45;
+            document.getElementById('sliderOperational').value = 15;
+            app.updateAllocatorBreakdown(document.getElementById('allocSalaryInput').value);
+          ">💰 Tabungan Prioritas</button>
+        </div>
+
+        <!-- Sliders -->
+        <div class="alloc-slider-row">
+          <div class="alloc-slider-header">
+            <span>🛒 Dapur & Belanja Sembako</span>
+            <span class="alloc-slider-val" id="lblKitchenPct">30%</span>
+          </div>
+          <input type="range" min="10" max="60" value="30" class="range-input" id="sliderKitchen" oninput="app.updateAllocatorBreakdown(document.getElementById('allocSalaryInput').value)">
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-top: 4px;" id="lblKitchenAmt">Rp 0</div>
+        </div>
+
+        <div class="alloc-slider-row">
+          <div class="alloc-slider-header">
+            <span>🎯 Alokasi Tabungan Keluarga</span>
+            <span class="alloc-slider-val" id="lblSavingsPct">30%</span>
+          </div>
+          <input type="range" min="10" max="60" value="30" class="range-input" id="sliderSavings" oninput="app.updateAllocatorBreakdown(document.getElementById('allocSalaryInput').value)">
+          <div style="font-size: 13px; font-weight: 800; color: var(--accent-gold); margin-top: 4px;" id="lblSavingsAmt">Rp 0</div>
+        </div>
+
+        <div class="alloc-slider-row">
+          <div class="alloc-slider-header">
+            <span>🏠 Operasional Rumah & Utilitas</span>
+            <span class="alloc-slider-val" id="lblOperationalPct">30%</span>
+          </div>
+          <input type="range" min="10" max="60" value="30" class="range-input" id="sliderOperational" oninput="app.updateAllocatorBreakdown(document.getElementById('allocSalaryInput').value)">
+          <div style="font-size: 13px; font-weight: 800; color: var(--accent-blue); margin-top: 4px;" id="lblOperationalAmt">Rp 0</div>
+        </div>
+
+        <div class="alloc-slider-row" style="background: var(--bg-hover);">
+          <div class="alloc-slider-header">
+            <span>☕ Kas Fleksibel & Hiburan</span>
+            <span class="alloc-slider-val" id="lblFlexiblePct">10%</span>
+          </div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);" id="lblFlexibleAmt">Rp 0</div>
+        </div>
+
+        <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="app.applySalaryAllocationFromModal()">
+          Terapkan Alokasi Otomatis ke Kas & Tabungan
+        </button>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 2: Catat Transaksi Kas & Pengeluaran
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalAddTransaction">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Catat Transaksi Baru</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalAddTransaction')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const title = document.getElementById('txTitle').value;
+          const amount = document.getElementById('txAmount').value;
+          const type = document.getElementById('txType').value;
+          const category = document.getElementById('txCategory').value;
+          const note = document.getElementById('txNote').value;
+          if (title && amount) {
+            window.homeStore.addTransaction({ title, amount, type, category, note });
+            app.closeModal('modalAddTransaction');
+            showToast('Transaksi berhasil dicatat!');
+          }
+        ">
+          <div class="form-group">
+            <label class="form-label">Jenis Transaksi</label>
+            <select class="form-select" id="txType">
+              <option value="expense">Pengeluaran (-)</option>
+              <option value="income">Pemasukan (+)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nama Transaksi</label>
+            <input type="text" class="form-input" id="txTitle" placeholder="Contoh: Belanja Sayur & Buah Segar" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nominal (Rp)</label>
+            <input type="number" class="form-input" id="txAmount" placeholder="Contoh: 150000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" id="txCategory">
+              <option value="Belanja Bulanan">🛒 Belanja Bulanan Supermarket</option>
+              <option value="Listrik">⚡ Listrik PLN (Token / Tagihan)</option>
+              <option value="Internet">🌐 Internet WiFi Rumah</option>
+              <option value="Gas">🔥 Gas Elpiji Dapur</option>
+              <option value="Iuran RT">🏘️ Iuran RT, Sampah & Keamanan</option>
+              <option value="Dapur & Makanan">🥬 Dapur & Sembako Harian</option>
+              <option value="Utilitas">💡 Utilitas Lainnya (Air PDAM dll)</option>
+              <option value="Transportasi">🚗 Transportasi & Bensin</option>
+              <option value="Hiburan & Fleksibel">☕ Hiburan & Fleksibel</option>
+              <option value="Pemasukan Lain">💵 Pemasukan Tambahan</option>
+              <option value="Lainnya">📦 Lainnya</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Catatan Tambahan (Opsional)</label>
+            <input type="text" class="form-input" id="txNote" placeholder="Keterangan toko atau keperluan">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Simpan Transaksi</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: Input Rincian Pengeluaran Rutin (Belanja, Listrik, Internet, Gas, Iuran RT)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalRoutineExpenses">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Rincian Pengeluaran Rutin</h3>
+            <span style="font-size: 12px; color: var(--text-secondary);">Belanja Bulanan, Listrik, Internet, Gas & Iuran RT</span>
+          </div>
+          <button class="modal-close-btn" onclick="app.closeModal('modalRoutineExpenses')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const b = document.getElementById('rtnBelanja').value;
+          const l = document.getElementById('rtnListrik').value;
+          const i = document.getElementById('rtnInternet').value;
+          const g = document.getElementById('rtnGas').value;
+          const rt = document.getElementById('rtnIuran').value;
+          window.homeStore.inputRoutineExpenses({
+            belanja: b,
+            listrik: l,
+            internet: i,
+            gas: g,
+            iuran: rt
+          });
+          app.closeModal('modalRoutineExpenses');
+          showToast('⚡ 5 Pengeluaran Rutin Berhasil Dicatat ke Kas!');
+        ">
+          <div class="form-group">
+            <label class="form-label">🛒 Belanja Bulanan Supermarket & Sembako (Rp)</label>
+            <input type="number" class="form-input" id="rtnBelanja" value="1850000" placeholder="1850000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">⚡ Tagihan Listrik PLN (Rp)</label>
+            <input type="number" class="form-input" id="rtnListrik" value="450000" placeholder="450000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">🌐 Internet WiFi Rumah (Rp)</label>
+            <input type="number" class="form-input" id="rtnInternet" value="350000" placeholder="350000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">🔥 Gas Elpiji Dapur (Refill) (Rp)</label>
+            <input type="number" class="form-input" id="rtnGas" value="85000" placeholder="85000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">🏘️ Iuran RT, Sampah & Keamanan (Rp)</label>
+            <input type="number" class="form-input" id="rtnIuran" value="100000" placeholder="100000" required>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px;">
+            Simpan Semua Rincian ke Kas
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 3: Tambah Target Tabungan Keluarga
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalAddSavings">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Tambah Target Tabungan</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalAddSavings')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const name = document.getElementById('savName').value;
+          const target = document.getElementById('savTarget').value;
+          const current = document.getElementById('savCurrent').value;
+          const category = document.getElementById('savCategory').value;
+          if (name && target) {
+            window.homeStore.addSavingsGoal({ name, target, current, type: 'saving', category });
+            app.closeModal('modalAddSavings');
+            showToast('Target tabungan berhasil ditambahkan!');
+          }
+        ">
+          <div class="form-group">
+            <label class="form-label">Nama Target Tabungan</label>
+            <input type="text" class="form-input" id="savName" placeholder="Contoh: Dana Darurat, Tabungan Liburan, Kurban" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Target Nominal (Rp)</label>
+            <input type="number" class="form-input" id="savTarget" placeholder="Contoh: 10000000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Saldo Awal Saat Ini (Rp)</label>
+            <input type="number" class="form-input" id="savCurrent" placeholder="0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori Tabungan</label>
+            <input type="text" class="form-input" id="savCategory" placeholder="Contoh: Dana Darurat, Pendidikan, Liburan, Rumah">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Simpan Target Tabungan</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: Ubah / Edit Target Tabungan Keluarga
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalEditSavings">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Edit Target Tabungan</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalEditSavings')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault(); app.saveEditedSavings();">
+          <input type="hidden" id="editSavId">
+
+          <div class="form-group">
+            <label class="form-label">Nama Target Tabungan</label>
+            <input type="text" class="form-input" id="editSavName" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Target Nominal (Rp)</label>
+            <input type="number" class="form-input" id="editSavTarget" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Saldo Terkumpul Saat Ini (Rp)</label>
+            <input type="number" class="form-input" id="editSavCurrent" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori Tabungan</label>
+            <input type="text" class="form-input" id="editSavCategory">
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <button type="button" class="btn-secondary" style="flex: 1;" onclick="app.closeModal('modalEditSavings')">
+              Batal
+            </button>
+            <button type="submit" class="btn-primary" style="flex: 2;">
+              Simpan Perubahan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 4: Tambah Stok Inventaris Sembako
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalAddInventory">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Tambah Stok Sembako Dapur</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalAddInventory')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const name = document.getElementById('invName').value;
+          const category = document.getElementById('invCat').value;
+          const currentStock = document.getElementById('invStock').value;
+          const minStock = document.getElementById('invMin').value;
+          const unit = document.getElementById('invUnit').value;
+          const priceEstimate = document.getElementById('invPrice').value;
+          const location = document.getElementById('invLoc').value;
+          if (name) {
+            window.homeStore.addInventory({ name, category, currentStock, minStock, unit, priceEstimate, location });
+            app.closeModal('modalAddInventory');
+            showToast(`Item "${name}" berhasil ditambahkan ke dapur!`);
+          }
+        ">
+          <div class="form-group">
+            <label class="form-label">Nama Barang / Sembako</label>
+            <input type="text" class="form-input" id="invName" placeholder="Contoh: Garam Dapur Beryodium" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" id="invCat">
+              <option value="Bahan Pokok">Bahan Pokok (Beras, Minyak, Gula)</option>
+              <option value="Protein & Lauk">Protein & Lauk (Telur, Ayam, Daging)</option>
+              <option value="Bumbu & Rempah">Bumbu & Rempah</option>
+              <option value="Kebersihan">Kebersihan & Perlengkapan</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label">Stok Saat Ini</label>
+              <input type="number" class="form-input" id="invStock" placeholder="2" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Batas Minimum</label>
+              <input type="number" class="form-input" id="invMin" placeholder="1" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label">Satuan</label>
+              <input type="text" class="form-input" id="invUnit" placeholder="kg, liter, pcs, butir" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Est. Harga Satuan (Rp)</label>
+              <input type="number" class="form-input" id="invPrice" placeholder="15000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Lokasi Penyimpanan</label>
+            <input type="text" class="form-input" id="invLoc" placeholder="Toples, Kulkas, Rak Dapur">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Simpan ke Inventaris</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 5: Tambah Item Belanja Baru
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalAddShopping">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Tambah Item Belanja</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalAddShopping')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const name = document.getElementById('shopName').value;
+          const qty = document.getElementById('shopQty').value;
+          const unit = document.getElementById('shopUnit').value;
+          const priceEstimate = document.getElementById('shopPrice').value;
+          const note = document.getElementById('shopNote').value;
+          if (name) {
+            window.homeStore.addShoppingItem({ name, qty, unit, priceEstimate, note });
+            app.closeModal('modalAddShopping');
+            showToast(`Item "${name}" masuk ke daftar belanja!`);
+          }
+        ">
+          <div class="form-group">
+            <label class="form-label">Nama Barang</label>
+            <input type="text" class="form-input" id="shopName" placeholder="Contoh: Saus Tiram 260ml" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label">Jumlah (Qty)</label>
+              <input type="number" class="form-input" id="shopQty" value="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Satuan</label>
+              <input type="text" class="form-input" id="shopUnit" value="botol" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estimasi Harga Total (Rp)</label>
+            <input type="number" class="form-input" id="shopPrice" placeholder="18000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Catatan / Merek (Opsional)</label>
+            <input type="text" class="form-input" id="shopNote" placeholder="Contoh: Merk Lee Kum Kee / botol kaca">
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Tambahkan ke Daftar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 6: Tambah Tugas Rumah Tangga (Chores)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modalAddChore">
+      <div class="modal-sheet">
+        <div class="modal-drag-indicator"></div>
+        <div class="modal-header">
+          <h3 class="modal-title">Tambah Tugas Rumah (Chores)</h3>
+          <button class="modal-close-btn" onclick="app.closeModal('modalAddChore')">✕</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const title = document.getElementById('choreTitle').value;
+          const assignee = document.getElementById('choreAssignee').value;
+          const day = document.getElementById('choreDay').value;
+          const time = document.getElementById('choreTime').value;
+          if (title) {
+            window.homeStore.addChore({ title, assignee, day, time });
+            app.closeModal('modalAddChore');
+            showToast('Tugas rumah tangga berhasil ditambahkan!');
+          }
+        ">
+          <div class="form-group">
+            <label class="form-label">Nama Tugas</label>
+            <input type="text" class="form-input" id="choreTitle" placeholder="Contoh: Bersihkan Filter AC & Kipas" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Penanggung Jawab (PIC)</label>
+            <select class="form-select" id="choreAssignee">
+              <option value="Ayah">Ayah</option>
+              <option value="Ibu">Ibu</option>
+              <option value="Anak">Anak</option>
+              <option value="Bersama">Bersama</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label">Hari Pelaksanaan</label>
+              <select class="form-select" id="choreDay">
+                <option value="Hari Ini">Hari Ini</option>
+                <option value="Senin">Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu">Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat">Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Waktu</label>
+              <select class="form-select" id="choreTime">
+                <option value="Pagi">Pagi</option>
+                <option value="Siang">Siang</option>
+                <option value="Sore">Sore</option>
+                <option value="Malam">Malam</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Simpan Tugas</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         SCREEN: Protected Authentication (Login Screen)
+         ===================================================================== -->
+    <div class="login-screen-wrapper" id="loginScreenWrapper">
+      <div class="login-card">
+        <div class="login-logo-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+
+        <h2 class="login-title">HomeFlow</h2>
+        <p class="login-subtitle">Aplikasi Pintar Manajemen Rumah Tangga & Keuangan</p>
+
+        <!-- Quick autofill pill for effortless demo -->
+        <div class="demo-credentials-pill" id="demoCredentialsPill" onclick="app.autofillLogin()">
+          ✨ Klik di sini untuk isi Akun Admin (admin / 123)
+        </div>
+
+        <form onsubmit="event.preventDefault();
+          const u = document.getElementById('loginUser').value;
+          const p = document.getElementById('loginPass').value;
+          app.login(u, p);
+        ">
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label">Nama Pengguna (Username)</label>
+            <input type="text" class="form-input" id="loginUser" value="admin" placeholder="admin" required>
+          </div>
+
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label">Kata Sandi (Password)</label>
+            <input type="password" class="form-input" id="loginPass" value="123" placeholder="123" required>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px; padding: 14px;">
+            Masuk ke HomeFlow
+          </button>
+        </form>
+
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 20px;">
+          Privasi Aman • Data Tersimpan Lokal di Perangkat
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
